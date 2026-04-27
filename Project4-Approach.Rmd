@@ -1,0 +1,18 @@
+---
+title: 'Project 4: Document Classification'
+author: "Kristoff Oliphant"
+date: "2026-04-27"
+output: html_document
+---
+
+## Introduction
+
+Hello, we're back for our fourth project. In this project, we're tasked with Document Classification. A common example of document classification is using a corpus of labeled spam and ham (non-spam) e-mails to predict whether or not a new document is spam.
+
+## Planned Workflow
+
+I plan to obtain a spam collection from UCI. The collection dataset I found is called "SMS Spam Collection". This dataset contains a public set of SMS labeled messages that have been collected for mobile phone spam research. Next is loading the UCI dataset into R and getting it ready for analysis by cleaning, making everything lowercase and removing anything that doesn't help with predicting spam. After cleaning the text, the goal is train the model to test predictions.
+
+## Anticipated challenges
+
+Some challenges would be getting the file to load correctly in R and the accuracy of the predictions made. The nature of text has a lot of lingo and irrelevant words that may make things confusing

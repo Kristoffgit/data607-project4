@@ -1,0 +1,82 @@
+---
+title: 'Project 4: Document Classification'
+author: "Kristoff Oliphant"
+date: "2026-04-27"
+output: html_document
+---
+
+## Introduction
+
+Hello, we're back for our fourth project. In this project, we're tasked with Document Classification. A common example of document classification is using a corpus of labeled spam and ham (non-spam) e-mails to predict whether or not a new document is spam.
+
+## Planned Workflow
+
+I plan to obtain a spam collection from UCI. The collection dataset I found is called "SMS Spam Collection". This dataset contains a public set of SMS labeled messages that have been collected for mobile phone spam research. Next is loading the UCI dataset into R and getting it ready for analysis by cleaning, making everything lowercase and removing anything that doesn't help with predicting spam. After cleaning the text, the goal is train the model to test predictions.
+
+## Anticipated challenges
+
+Some challenges would be getting the file to load correctly in R and the accuracy of the predictions made. The nature of text has a lot of lingo and irrelevant words that may make things confusing
+
+**Source:** Almeida, T. & Hidalgo, J. (2011). SMS Spam Collection [Dataset]. UCI Machine Learning Repository. <https://doi.org/10.24432/C5CC84>.
+
+```{r}
+library(tm)
+library(e1071)
+```
+
+```{r}
+raw_data <- read.delim("SMSSpamCollection", header = FALSE, sep = "\t", quote = "", stringsAsFactors = FALSE)
+colnames(raw_data) <- c("label", "text")
+raw_data$label <- as.factor(raw_data$label)
+```
+
+```{r}
+sms_corpus <- VCorpus(VectorSource(raw_data$text))
+```
+
+```{r}
+sms_corpus_clean <- tm_map(sms_corpus, content_transformer(tolower))
+sms_corpus_clean <- tm_map(sms_corpus_clean, removeNumbers)
+sms_corpus_clean <- tm_map(sms_corpus_clean, removeWords, stopwords())
+sms_corpus_clean <- tm_map(sms_corpus_clean, removePunctuation)
+sms_corpus_clean <- tm_map(sms_corpus_clean, stripWhitespace)
+```
+
+```{r}
+sms_dtm <- DocumentTermMatrix(sms_corpus_clean)
+```
+
+```{r}
+set.seed(123)
+train_index <- sample(1:nrow(raw_data), 0.75 * nrow(raw_data))
+```
+
+```{r}
+train_sms <- sms_dtm[train_index, ]
+test_sms <- sms_dtm[-train_index, ]
+```
+
+```{r}
+train_labels <- raw_data$label[train_index]
+test_labels <- raw_data$label[-train_index]
+```
+
+```{r}
+threshold <- 5
+sms_freq_words <- findFreqTerms(train_sms, threshold)
+train_sms <- train_sms[, sms_freq_words]
+test_sms <- test_sms[, sms_freq_words]
+```
+
+```{r}
+convert_counts <- function(x) {
+  x <- ifelse(x > 0, "Yes", "No") }
+train_nb <- apply(train_sms, MARGIN = 2, convert_counts)
+test_nb <- apply(test_sms, MARGIN = 2, convert_counts)
+```
+
+```{r}
+sms_classifier <- naiveBayes(train_nb, train_labels)
+sms_test_pred <- predict(sms_classifier, test_nb)
+table(Predicted = sms_test_pred, Actual = test_labels)
+```
